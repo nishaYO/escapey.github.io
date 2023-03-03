@@ -118,19 +118,19 @@ class UserCircle extends Shape {
   //detecting collision with the canvas boundary
   checkBounds() {
     // detecting right side  edge collision
-    if (this.x - this.size >= width) {
+    if (this.x + this.size >= width) {
       this.x -= this.size;
     }
     // detecting left side  edge collision
-    if (this.x + this.size <= 0) {
+    if (this.x - this.size <= 0) {
       this.x += this.size;
     }
     // detecting downside  edge collision
-    if (this.y - this.size >= height) {
+    if (this.y + this.size >= height) {
       this.y -= this.size;
     }
     // detecting upside  edge collision
-    if (this.y + this.size <= 0) {
+    if (this.y - this.size <= 0) {
       this.y += this.size;
     }
   }
