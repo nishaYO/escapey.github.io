@@ -7,19 +7,21 @@ const replay = document.getElementById("replay");
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-// chaining multiple assignments
+// setup canvas width and height
 const width = (canvas.width = window.innerWidth);
 const height = (canvas.height = window.innerHeight);
 
-// function to generate random number
+// finish and start line X axis
+const finishX = width - (10 * width) / 100;
+const startX = (15 * width) / 100;
 
+// function to generate random number
 function random(min, max) {
   const num = Math.floor(Math.random() * (max - min + 1)) + min;
   return num;
 }
 
 // function to generate random color
-
 function randomRGB() {
   return `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`;
 }
@@ -34,14 +36,16 @@ class Shape {
   }
 }
 
+// class for enemy balls
 class Ball extends Shape {
   constructor(x, y, size, color, velx, vely) {
     super(x, y, velx, vely);
     this.size = size;
     this.color = color;
-    this.exists = true;
+    this.exists = true; 
   }
 
+  // draw function for the balls
   draw() {
     ctx.beginPath();
     ctx.fillStyle = this.color;
@@ -49,21 +53,22 @@ class Ball extends Shape {
     ctx.fill();
   }
 
+  // function to change direction when collided with boundary
   update() {
-    // detecting right side  edge collision
-    if (this.x - this.size >= width - 200) {
+    // detecting right side boundary collision
+    if (this.x + this.size >= finishX) {
+      this.velx = -this.velx; //go in opposite direction
+    }
+    // detecting left side boundary collision
+    if (this.x - this.size <= startX) {
       this.velx = -this.velx;
     }
-    // detecting left side  edge collision
-    if (this.x + this.size <= 300) {
-      this.velx = -this.velx;
-    }
-    // detecting downside  edge collision
-    if (this.y - this.size >= height) {
+    // detecting downside boundary collision
+    if (this.y + this.size >= height) {
       this.vely = -this.vely;
     }
-    // detecting upside  edge collision
-    if (this.y + this.size <= 0) {
+    // detecting upside boundary collision
+    if (this.y - this.size <= 0) {
       this.vely = -this.vely;
     }
 
@@ -73,46 +78,35 @@ class Ball extends Shape {
   }
 }
 
-// creating the user's circle
-class EvilCircle extends Shape {
+// user circle class
+class UserCircle extends Shape {
   constructor(x, y) {
-    super(x, y, 20, 20);
+    super(x, y);
     this.color = "rgb(255,255,255)";
     this.size = 10;
-    // window.addEventListener("keydown", (e) => {
-    //   switch (e.key) {
-    //     case "a":
-    //       this.x -= 6;
-    //       break;
-    //     case "d":
-    //       this.x += 6;
-    //       break;
-    //     case "w":
-    //       this.y -= 6;
-    //       break;
-    //     case "s":
-    //       this.y += 6;
-    //       break;
-    //   }
 
-    // });
-
+    // moving usercircle using keys
     window.addEventListener("keydown", (e) => {
       if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") {
-        evilCircle.x -= 6;
+        userCircle.x -= 6;
       }
       if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") {
-        evilCircle.x += 6;
+        userCircle.x += 6;
       }
       if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") {
-        evilCircle.y += 6;
+        userCircle.y += 6;
       }
       if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") {
-        evilCircle.y -= 6;
+        userCircle.y -= 6;
       }
+      // if ((e.key === "w" && e.key === "d") || (e.key === "W" && e.key === "D") || (e.key === "ArrowUp" && e.key === "ArrowRight")){
+      //   userCircle.y -= 6;
+      //   userCircle.x += 6;
+      // }
     });
-
   }
+
+  //drawing user circle
   draw() {
     ctx.beginPath();
     ctx.lineWidth = 3;
@@ -120,6 +114,8 @@ class EvilCircle extends Shape {
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.stroke();
   }
+
+  //detecting collision with the canvas boundary
   checkBounds() {
     // detecting right side  edge collision
     if (this.x - this.size >= width) {
@@ -138,16 +134,16 @@ class EvilCircle extends Shape {
       this.y += this.size;
     }
   }
-
+  //detecting collision with enemy balls
   collisionDetect() {
-    for (const ball of Balls) {
+    for (const ball of balls) {
       // ignoring the same ball's distance from itself
       if (ball.exists) {
         // applying pythogores thoeram [ c = sqt(a**2 + b**2)]
         const dx = this.x - ball.x;
         const dy = this.y - ball.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        // changing color if distance lesser then sum of their radii
+        //calling lost() if distance lesser then sum of their radii
         if (distance < this.size + ball.size) {
           ball.exists = false;
           setTimeout(lost, 500);
@@ -157,74 +153,44 @@ class EvilCircle extends Shape {
   }
 }
 
-// creating a Balls array and storing all 10 ball instances of the Ball constructor object using a loop
-const Balls = [];
+// creating a user circle instance
+const userCircle = new UserCircle(100, 250);
 
+// creating a balls array and storing all 10 ball instances of the Ball constructor object using a loop
+const balls = [];
 for (let i = 0; i < 10; i++) {
   const Size = random(15, 20);
-  const X = random(300 + Size, width - Size - 200);
+  const X = random(startX + Size, finishX - Size);
   const Y = random(0 + Size, height - Size);
-  const VelX = random(-3, 3);
-  const VelY = random(-3, 3);
+  let VelX, VelY;
+  do {
+    VelX = random(-3, 3);
+    VelY = random(-3, 3);
+  } while (VelX == 0 && VelY == 0);//ensuring that the velocity x and y are not zero at the same time  
   const ball = new Ball(X, Y, Size, randomRGB(), VelX, VelY);
-  Balls.push(ball);
-}
-
-// creating an evil circle instance
-const evilCircle = new EvilCircle(100, 250);
-
-// lost function when collision detected
-const lost = () => {
-  output.insertAdjacentHTML("afterbegin", "<p>YOU LOST:(</p>");
-  output.classList.remove("hidden");
-  replay.classList.remove("hidden");
-  canvas.classList.add("hidden");
-  h1.classList.add("hidden");
-  replay.addEventListener("click", () => location.reload());
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      location.reload();
-    }
-  });
-};
-
-// won function if reached finish line
-const won = () => {
-  output.insertAdjacentHTML("afterbegin", "<p>YOU WON:)</p>");
-  output.classList.remove("hidden");
-  replay.classList.remove("hidden");
-  canvas.classList.add("hidden");
-  h1.classList.add("hidden");
-  replay.addEventListener("click", () => location.reload());
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-      location.reload();
-    }
-  });
-};
-
-function reachFinishLine() {
-  if (this.x >= width - 164) {
-    setTimeout(won, 2000);
-  }
+  balls.push(ball);
 }
 
 // number of balls initially
 const count = 20;
 
 function loop() {
+  // drawing black background of the game
   ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
   ctx.fillRect(0, 0, width, height);
-  ctx.moveTo(width - 164, height);
-  ctx.lineTo(width - 164, 0);
-  ctx.strokeStyle = "white";
-  ctx.stroke();
-  ctx.moveTo(265, height);
-  ctx.lineTo(265, 0);
+
+  // drawing finish line
+  ctx.moveTo(finishX, height);
+  ctx.lineTo(finishX, 0);
+
+  // drawing start line
+  ctx.moveTo(startX, height);
+  ctx.lineTo(startX, 0);
+
   ctx.strokeStyle = "white";
   ctx.stroke();
 
-  for (const ball of Balls) {
+  for (const ball of balls) {
     if (ball.exists) {
       ball.draw();
       ball.update();
@@ -233,16 +199,47 @@ function loop() {
     }
   }
 
-  evilCircle.draw();
-  evilCircle.checkBounds();
-  evilCircle.collisionDetect();
+  userCircle.draw();
+  userCircle.checkBounds();
+  userCircle.collisionDetect();
   requestAnimationFrame(loop);
 }
 
 loop();
 
+// if collided with the enemy balls
+const lost = () => {
+  output.insertAdjacentHTML("afterbegin", "<p>YOU LOST:(</p>");
+  output.classList.remove("hidden");
+  replay.classList.remove("hidden");
+  canvas.classList.add("hidden");
+  h1.classList.add("hidden");
+  replay.addEventListener("click", () => location.reload());
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" || event.key === " ") {
+      location.reload();
+    }
+  });
+};
+
+//if reached finish line
+const won = () => {
+  output.insertAdjacentHTML("afterbegin", "<p>YOU WON:)</p>");
+  output.classList.remove("hidden");
+  replay.classList.remove("hidden");
+  canvas.classList.add("hidden");
+  h1.classList.add("hidden");
+  replay.addEventListener("click", () => location.reload());
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" || event.key === " ") {
+      location.reload();
+    }
+  });
+};
+
+//calling won()
 function checkCollision() {
-  if (evilCircle.x >= width - 120) {
+  if (userCircle.x >= finishX + userCircle.size) {
     won();
   } else {
     requestAnimationFrame(checkCollision);
@@ -250,4 +247,3 @@ function checkCollision() {
 }
 
 checkCollision();
-
