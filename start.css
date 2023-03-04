@@ -1,0 +1,28 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: rgb(221, 216, 216);
+}
+
+h1,
+h2 {
+  margin: 40px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: rgb(85, 200, 85);
+  border-radius: 5px;
+  box-shadow: 2px 2px 4px rgb(147, 138, 138);
+  font-size: 25px;
+  margin: 20px;
+}
