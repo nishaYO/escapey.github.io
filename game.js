@@ -42,7 +42,7 @@ class Ball extends Shape {
     super(x, y, velx, vely);
     this.size = size;
     this.color = color;
-    this.exists = true; 
+    this.exists = true;
   }
 
   // draw function for the balls
@@ -86,23 +86,57 @@ class UserCircle extends Shape {
     this.size = 10;
 
     // moving usercircle using keys
-    window.addEventListener("keydown", (e) => {
+    let wPressed = false;
+    let dPressed = false;
+    let aPressed = false;
+    let sPressed = false;
+    document.addEventListener("keydown", (e) => {
       if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") {
         userCircle.x -= 6;
+        aPressed = true;
       }
       if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") {
         userCircle.x += 6;
+        dPressed = true;
       }
       if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") {
         userCircle.y += 6;
+        sPressed = true;
       }
       if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") {
         userCircle.y -= 6;
+        wPressed = true;
       }
-      // if ((e.key === "w" && e.key === "d") || (e.key === "W" && e.key === "D") || (e.key === "ArrowUp" && e.key === "ArrowRight")){
-      //   userCircle.y -= 6;
-      //   userCircle.x += 6;
-      // }
+      if (dPressed && wPressed) {
+        userCircle.x += 3;
+        userCircle.y -= 3;
+      }
+      if (aPressed && wPressed) {
+        userCircle.x -= 3;
+        userCircle.y -= 3;
+      }
+      if (dPressed && sPressed) {
+        userCircle.x += 3;
+        userCircle.y += 3;
+      }
+      if (aPressed && sPressed) {
+        userCircle.x -= 3;
+        userCircle.y += 3;
+      }
+    });
+    window.addEventListener("keyup", (e)=>{
+      if (e.key === "a" || e.key === "A" || e.key === "ArrowLeft") {
+        aPressed = false;
+      }
+      if (e.key === "w" || e.key === "W" || e.key === "ArrowUp") {
+        wPressed = false;
+      }
+      if (e.key === "d" || e.key === "D" || e.key === "ArrowRight") {
+        dPressed = false;
+      }
+      if (e.key === "s" || e.key === "S" || e.key === "ArrowDown") {
+        sPressed = false;
+      }
     });
   }
 
@@ -166,7 +200,7 @@ for (let i = 0; i < 10; i++) {
   do {
     VelX = random(-3, 3);
     VelY = random(-3, 3);
-  } while (VelX == 0 && VelY == 0);//ensuring that the velocity x and y are not zero at the same time  
+  } while (VelX == 0 && VelY == 0); //ensuring that the velocity x and y are not zero at the same time
   const ball = new Ball(X, Y, Size, randomRGB(), VelX, VelY);
   balls.push(ball);
 }
